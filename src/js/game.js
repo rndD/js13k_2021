@@ -8,8 +8,15 @@ let canvasWidth = (canvas.width = window.innerWidth);
 let canvasHeight = (canvas.height = window.innerHeight);
 let ctx = canvas.getContext("2d");
 
-const SHAPE_SIZE = 150;
+const SHAPE_SIZE = 32;
 const SHAPE_HALF_SIZE = SHAPE_SIZE / 2;
+
+const COLORS = {
+  
+  
+
+};
+
 function drawBox(position) {
   ctx.beginPath();
   ctx.rect(
@@ -29,10 +36,14 @@ function drawBox(position) {
 const world = ECS.createWorld();
 
 // set up the player
-const PLAYER = ECS.createEntity(world);
-ECS.addComponentToEntity(world, PLAYER, "position", { x: 105, y: 123 });
-ECS.addComponentToEntity(world, PLAYER, "moveable", { dx: 0, dy: 0 });
-ECS.addComponentToEntity(world, PLAYER, "renderable");
+for (let i = 0; i < 100; i++) {
+  const PLAYER = ECS.createEntity(world);
+  ECS.addComponentToEntity(world, PLAYER, "position", { x: 105 + i * SHAPE_SIZE + 10, y: 123 + i* 10 });
+  ECS.addComponentToEntity(world, PLAYER, "moveable", { dx: 0, dy: 0 });
+  ECS.addComponentToEntity(world, PLAYER, "renderable");
+  ECS.addComponentToEntity(world, PLAYER, "tower");
+  ECS.addComponentToEntity(world, PLAYER, "unit", "hp");
+}
 
 // update entity velocity based on key pressed
 function keyboardControlSystem(world) {

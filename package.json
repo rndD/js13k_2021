@@ -11,8 +11,9 @@
     "build:zip": "zip -FS -qjX9 dist/game.zip dist/index.html && advzip -z -4 dist/game.zip",
     "build:zipSize": "node scripts/zipSize.js",
     "start": "npm-run-all -s clean -p dev:*",
+    "start-win": "npm-run-all -p dev:*",
     "dev:js": "esbuild src/js/game.js --bundle --format=iife --loader:.webp=dataurl --sourcemap --outfile=dist/game.js --watch",
-    "dev:serve_watch_html_js": "browser-sync 'dist' 'src' --watch --host 0.0.0.0 --https",
+    "dev:serve_watch_html_js": "browser-sync dist src --watch --host 0.0.0.0 --https",
     "dev:watch_img": "chokidar src/img -d 0 -c 'npm run dev:js'"
   },
   "license": "MIT",
@@ -32,14 +33,5 @@
     "clamp": "^1.0.1",
     "npm": "^6.14.7",
     "remove-array-items": "^3.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/herebefrogs/gamejam-boilerplate.git"
-  },
-  "author": "Jerome Lecomte <jerome@herebefrogs.com>",
-  "bugs": {
-    "url": "https://github.com/herebefrogs/gamejam-boilerplate/issues"
-  },
-  "homepage": "https://github.com/herebefrogs/gamejam-boilerplate#readme"
+  }
 }
