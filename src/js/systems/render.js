@@ -6,8 +6,9 @@ let canvasWidth = (canvas.width = window.innerWidth);
 let canvasHeight = (canvas.height = window.innerHeight);
 let ctx = canvas.getContext("2d");
 
-const SHAPE_SIZE = 150;
+export const SHAPE_SIZE = 32;
 const SHAPE_HALF_SIZE = SHAPE_SIZE / 2;
+
 function drawBox(position) {
   ctx.beginPath();
   ctx.rect(
