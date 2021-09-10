@@ -10,16 +10,16 @@ export function setRandSeed(seed) {
 
   // save seed in URL
   const url = new URL(location);
-  url.searchParams.set('seed', seed);
-  history.pushState({}, '', url);
+  url.searchParams.set("seed", seed);
+  history.pushState({}, "", url);
 }
 
 // return a seed value retrieved from the URL (if present) or generated (if missing or asked to change)
 export function getRandSeed(changeSeed = false) {
   // attempt to read seed from URL
-  let seed = new URLSearchParams(location.search).get('seed');
+  let seed = new URLSearchParams(location.search).get("seed");
 
-  return (!seed || changeSeed) ? createRandSeed() : seed;
+  return !seed || changeSeed ? createRandSeed() : seed;
 }
 
 /**
@@ -44,37 +44,39 @@ function seedRand(str) {
 
   // first create a suitable hash of the seed string using xfnv1a
   // @see https://github.com/bryc/code/blob/master/jshash/PRNGs.md#addendum-a-seed-generating-functions
-  for(var i = 0, h = 2166136261 >>> 0; i < str.length; i++) {
+  for (var i = 0, h = 2166136261 >>> 0; i < str.length; i++) {
     h = Math.imul(h ^ str.charCodeAt(i), 16777619);
   }
-  h += h << 13; h ^= h >>> 7;
-  h += h << 3;  h ^= h >>> 17;
+  h += h << 13;
+  h ^= h >>> 7;
+  h += h << 3;
+  h ^= h >>> 17;
   let seed = (h += h << 5) >>> 0;
 
   // then return the seed function and discard the first result
   // @see https://github.com/bryc/code/blob/master/jshash/PRNGs.md#lcg-lehmer-rng
-  let rand = () => (2 ** 31 - 1 & (seed = Math.imul(48271, seed))) / 2 ** 31;
+  let rand = () => ((2 ** 31 - 1) & (seed = Math.imul(48271, seed))) / 2 ** 31;
   rand();
   return rand;
 }
 
 // return a new seed made of a combination of 6 letters or numbers
 function createRandSeed() {
-// base64-encoding a random number between 0 and 1, discarding the first 3 characters (always MC4) and keeping the next 6
-return btoa(prng()).slice(3, 9)
+  // base64-encoding a random number between 0 and 1, discarding the first 3 characters (always MC4) and keeping the next 6
+  return btoa(prng()).slice(3, 9);
 }
 
 export function rand(min = 0, max = 1) {
   return prng() * (max + 1 - min) + min;
-};
+}
 
 export function randInt(min = 0, max = 1) {
   return Math.floor(rand(min, max));
-};
+}
 
 export function choice(values) {
   return values[randInt(0, values.length - 1)];
-};
+}
 
 // LERP
 
@@ -122,11 +124,15 @@ export function smoothLerpArray(values, t) {
 // IMAGE LOADING
 
 export function loadImg(dataUri) {
-  return new Promise(function(resolve) {
+  return new Promise(function (resolve) {
     var img = new Image();
-    img.onload = function() {
+    img.onload = function () {
       resolve(img);
     };
     img.src = dataUri;
   });
-};
+}
+
+export function dist(pos1, pos2) {
+  return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+}

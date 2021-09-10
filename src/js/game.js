@@ -1,36 +1,51 @@
 import ECS from "./lib/ecs";
+import { gameSystem } from "./systems/game";
 import { keyboardControlSystem } from "./systems/keyboard";
 import { movementSystem} from "./systems/movement";
-import { rendererSystem, SHAPE_SIZE } from "./systems/render";
-import { spawnSystem } from "./systems/respawn";
+import { rendererSystem } from "./systems/render";
+import { enemyMovementSystem, spawnSystem } from "./systems/enemy";
+import { bulletMovementSystem, unitsSystem } from "./systems/units";
 
-const GAME_DATA = {};
 
 // generates a new entity component system
 const world = ECS.createWorld();
 
 // set spawn
-const SPAWN = ECS.createEntity(world);
-let i = 0;
-ECS.addComponentToEntity(world, SPAWN, "position", { x: 300 + (i * SHAPE_SIZE * 4), y: 100 });
-ECS.addComponentToEntity(world, SPAWN, "spawn", { nextTick: null, level: 1 });
 
+for (let i = 0; i < 7; i++) {
+  const SPAWN = ECS.createEntity(world);
+  ECS.addComponentToEntity(world, SPAWN, "position", { x: 300 + (i * 100 * 2), y: 100 });
+  ECS.addComponentToEntity(world, SPAWN, "spawn", { nextTick: 500, level: 1 });
+}
 
+const GAME = ECS.createEntity(world);
+ECS.addComponentToEntity(world, GAME, "gameData", { level: 1, lifeTime: 0 });
 
 // set up the player
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 4; i++) {
   const PLAYER = ECS.createEntity(world);
-  ECS.addComponentToEntity(world, PLAYER, "position", { x: 300 + (i * SHAPE_SIZE * 2), y: 800 });
-  ECS.addComponentToEntity(world, PLAYER, "moveable", { dx: 0, dy: 0 });
+  ECS.addComponentToEntity(world, PLAYER, "position", { x: 300 + (i * 150 * 2), y: 800 });
   ECS.addComponentToEntity(world, PLAYER, "renderable");
-  ECS.addComponentToEntity(world, PLAYER, "unit", { hp: 100, type: "tower"});
+  ECS.addComponentToEntity(world, PLAYER, "data", { creationTime: 0 });
+  ECS.addComponentToEntity(world, PLAYER, "body", { w: 32, h: 32 });
+  ECS.addComponentToEntity(world, PLAYER, "unit", { hp: 100, type: "tower", nextShot: null});
 }
 
 
+ECS.addSystem(world, gameSystem);
+
 ECS.addSystem(world, keyboardControlSystem);
+
 ECS.addSystem(world, spawnSystem);
+ECS.addSystem(world, unitsSystem);
+
+ECS.addSystem(world, enemyMovementSystem);
 ECS.addSystem(world, movementSystem);
+ECS.addSystem(world, bulletMovementSystem);
+ECS.addSystem(world, enemyMovementSystem);
+
 ECS.addSystem(world, rendererSystem);
+
 
 let currentTime = performance.now();
 
