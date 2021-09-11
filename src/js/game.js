@@ -5,6 +5,7 @@ import { movementSystem} from "./systems/movement";
 import { rendererSystem } from "./systems/render";
 import { enemyMovementSystem, spawnSystem } from "./systems/enemy";
 import { bulletMovementSystem, unitsSystem } from "./systems/units";
+import { inputSystem } from "./systems/input";
 
 
 // generates a new entity component system
@@ -12,19 +13,20 @@ const world = ECS.createWorld();
 
 // set spawn
 
-for (let i = 0; i < 7; i++) {
+for (let i = 0; i < 1; i++) {
   const SPAWN = ECS.createEntity(world);
-  ECS.addComponentToEntity(world, SPAWN, "position", { x: 300 + (i * 100 * 2), y: 100 });
+  ECS.addComponentToEntity(world, SPAWN, "position", { x: 20 + (i * 80 * 2), y: 100 });
   ECS.addComponentToEntity(world, SPAWN, "spawn", { nextTick: 500, level: 1 });
 }
 
 const GAME = ECS.createEntity(world);
-ECS.addComponentToEntity(world, GAME, "gameData", { level: 1, lifeTime: 0 });
+ECS.addComponentToEntity(world, GAME, "gameData", { wave: 1, lifeTime: 0, score: 0, mode: "building" });
+ECS.addComponentToEntity(world, GAME, "input", { pointer: {x: 0, y: 0}});
 
 // set up the player
-for (let i = 0; i < 4; i++) {
+for (let i = 0; i < 1; i++) {
   const PLAYER = ECS.createEntity(world);
-  ECS.addComponentToEntity(world, PLAYER, "position", { x: 300 + (i * 150 * 2), y: 800 });
+  ECS.addComponentToEntity(world, PLAYER, "position", { x: 11+16 + (32*3), y: 600 });
   ECS.addComponentToEntity(world, PLAYER, "renderable");
   ECS.addComponentToEntity(world, PLAYER, "data", { creationTime: 0 });
   ECS.addComponentToEntity(world, PLAYER, "body", { w: 32, h: 32 });
@@ -34,7 +36,7 @@ for (let i = 0; i < 4; i++) {
 
 ECS.addSystem(world, gameSystem);
 
-ECS.addSystem(world, keyboardControlSystem);
+ECS.addSystem(world, inputSystem);
 
 ECS.addSystem(world, spawnSystem);
 ECS.addSystem(world, unitsSystem);

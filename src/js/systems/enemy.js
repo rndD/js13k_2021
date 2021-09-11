@@ -9,9 +9,12 @@ export function spawnSystem(world) {
     for (const entity of ECS.getEntities(world, ["spawn"])) {
       if (isNextTick(entity, now)) {
         createEnemy(world, entity.position, entity.spawn.level, "linear");
+        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
+        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
         createEnemy(world, entity.position, entity.spawn.level, "linear");
         createEnemy(world, entity.position, entity.spawn.level, "zigzag");
-        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
+       
+      
       }
     }
   };
