@@ -1,20 +1,20 @@
 import clamp from "clamp";
 import {
+  BOTTOM_MENU_HEIGHT,
   COLOR_BLACK,
   COLOR_BROWN,
   COLOR_LIGHT_BLUE,
   COLOR_PINK,
   COLOR_WHITE,
+  LINES_GAP,
+  ORIGINAL_HEIGHT,
+  ORIGINAL_WIDTH,
+  TOP_MENU_HEIGHT,
 } from "../constans";
 import ECS from "../lib/ecs";
 import { dist, hexToRGB } from "../utils/utils";
 import { getGameData } from "./game";
 
-const BOTTOM_MENU_HEIGHT = 100;
-const TOP_MENU_HEIGHT = 30;
-const ORIGINAL_HEIGHT = 896;
-const ORIGINAL_WIDTH = 504;
-const LINES_GAP = 32;
 
 // Initialize canvas
 let MAIN_CANVAS = document.querySelector("canvas");
@@ -175,10 +175,20 @@ function drawBuildGreed(world) {
 }
 
 function renderPointer(pointer) {
-  GAME_CTX.beginPath();
-  GAME_CTX.arc(pointer.x, pointer.y, 10, 0, Math.PI * 2, true);
-  GAME_CTX.strokeStyle = COLOR_BROWN;
-  GAME_CTX.stroke();
+  let ctx;
+  if (pointer.ctxTarget === 'game') {
+    ctx = GAME_CTX;
+  }
+  if (pointer.ctxTarget === 'top') {
+    ctx = TOP_MENU_CTX;
+  }
+  if (pointer.ctxTarget === 'bottom') {
+    ctx = BOTTOM_MENU_CTX;
+  }
+  ctx.beginPath();
+  ctx.arc(pointer.x, pointer.y, 5, 0, Math.PI * 2, true);
+  ctx.strokeStyle = COLOR_BROWN;
+  ctx.stroke();
 }
 
 export function rendererSystem(world) {
@@ -213,7 +223,7 @@ export function rendererSystem(world) {
     // MAIN_CANVAS_CTX.fillRect(0, 0, canvasWidth, canvasHeight);
 
     // DEBUG POINTER
-    // renderPointer(ECS.getEntities(world, ["input"])[0].input.pointer);
+    renderPointer(ECS.getEntities(world, ["input"])[0].input.pointer);
 
     // compose
 
