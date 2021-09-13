@@ -5,7 +5,6 @@ import {
   TOP_MENU_HEIGHT,
 } from "../constans";
 import ECS from "../lib/ecs";
-import { GAME_HEIGHT, GAME_WIDTH } from "./render";
 
 let MAIN_CANVAS = document.querySelector("canvas");
 
@@ -22,11 +21,22 @@ function relativeCoords(e) {
 }
 
 let pointer = { x: 0, y: 0 };
+let pointerClicked = null;
+
+// MAIN_CANVAS.ontouchstart = MAIN_CANVAS.onpointerdown = function (e) {
+// 	e.preventDefault();
+
+// 	pointerClick = relativeCoords(e);
+//       };
 
 MAIN_CANVAS.ontouchmove = MAIN_CANVAS.onpointermove = function (e) {
   e.preventDefault();
 
   pointer = relativeCoords(e);
+};
+
+MAIN_CANVAS.ontouchend = MAIN_CANVAS.onpointerup = function (e) {
+  pointerClicked = relativeCoords(e);
 };
 
 export const inputSystem = (world) => {
@@ -45,6 +55,10 @@ export const inputSystem = (world) => {
       y = y - ORIGINAL_HEIGHT + BOTTOM_MENU_HEIGHT;
     }
     game.input.pointer = { x, y, ctxTarget };
+    if (pointerClicked) {
+      game.input.clicked = { x, y, ctxTarget };
+      pointerClicked = null;
+    }
   };
 
   return { onUpdate };

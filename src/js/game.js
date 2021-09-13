@@ -1,11 +1,12 @@
 import ECS from "./lib/ecs";
-import { gameSystem } from "./systems/game";
+import { createGame, gameSystem } from "./systems/game";
 import { keyboardControlSystem } from "./systems/keyboard";
 import { movementSystem} from "./systems/movement";
 import { rendererSystem } from "./systems/render";
 import { enemyMovementSystem, spawnSystem } from "./systems/enemy";
-import { bulletMovementSystem, unitsSystem } from "./systems/units";
+import { bulletMovementSystem, generatorSystem, shieldSystem, towerSystem, unitSystem} from "./systems/units";
 import { inputSystem } from "./systems/input";
+import { particleSystem } from "./systems/particles";
 
 
 // generates a new entity component system
@@ -19,19 +20,7 @@ for (let i = 0; i < 1; i++) {
   ECS.addComponentToEntity(world, SPAWN, "spawn", { nextTick: 500, level: 1 });
 }
 
-const GAME = ECS.createEntity(world);
-ECS.addComponentToEntity(world, GAME, "gameData", { wave: 1, lifeTime: 0, score: 0, mode: "building" });
-ECS.addComponentToEntity(world, GAME, "input", { pointer: {x: 0, y: 0}});
-
-// set up the player
-for (let i = 0; i < 1; i++) {
-  const PLAYER = ECS.createEntity(world);
-  ECS.addComponentToEntity(world, PLAYER, "position", { x: 11+16 + (32*3), y: 600 });
-  ECS.addComponentToEntity(world, PLAYER, "renderable");
-  ECS.addComponentToEntity(world, PLAYER, "data", { creationTime: 0 });
-  ECS.addComponentToEntity(world, PLAYER, "body", { w: 32, h: 32 });
-  ECS.addComponentToEntity(world, PLAYER, "unit", { hp: 100, type: "tower", nextShot: null});
-}
+createGame(world);
 
 
 ECS.addSystem(world, gameSystem);
@@ -39,13 +28,17 @@ ECS.addSystem(world, gameSystem);
 ECS.addSystem(world, inputSystem);
 
 ECS.addSystem(world, spawnSystem);
-ECS.addSystem(world, unitsSystem);
+ECS.addSystem(world, towerSystem);
+ECS.addSystem(world, generatorSystem);
+ECS.addSystem(world, shieldSystem);
+ECS.addSystem(world, unitSystem);
 
 ECS.addSystem(world, enemyMovementSystem);
 ECS.addSystem(world, movementSystem);
 ECS.addSystem(world, bulletMovementSystem);
 ECS.addSystem(world, enemyMovementSystem);
 
+ECS.addSystem(world, particleSystem);
 ECS.addSystem(world, rendererSystem);
 
 

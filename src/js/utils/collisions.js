@@ -1,4 +1,9 @@
-export function testAABBCollision(entity1pos, entity1wh, entity2pos, entity2wh) {
+export function testAABBCollision(
+  entity1pos,
+  entity1wh,
+  entity2pos,
+  entity2wh
+) {
   const test = {
     entity1MaxX: entity1pos.x + entity1wh.w,
     entity1MaxY: entity1pos.y + entity1wh.h,
@@ -86,15 +91,8 @@ export function correctAABBCollision(entity1, entity2, test) {
   }
 }
 
-export function constrainToViewport(entity, MAP) {
-  if (entity.x < 0) {
-    entity.x = 0;
-  } else if (entity.x > MAP.width - entity.w) {
-    entity.x = MAP.width - entity.w;
-  }
-  if (entity.y < 0) {
-    entity.y = 0;
-  } else if (entity.y > MAP.height - entity.h) {
-    entity.y = MAP.height - entity.h;
-  }
+export function isPointerIn(pointer, { x, y, w, h }) {
+  return (
+    pointer.x > x && pointer.x < x + w && pointer.y > y && pointer.y < y + h
+  );
 }

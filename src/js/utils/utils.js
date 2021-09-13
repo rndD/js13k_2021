@@ -148,3 +148,13 @@ export function hexToRGB(hex, alpha) {
       return "rgb(" + r + ", " + g + ", " + b + ")";
   }
 }
+
+export function addToText(str, n, char) {
+  str = String(str);
+  let x =  n -str.length;
+  return new Array(x + 1).join(char) + str;
+} 
+
+export function id() {
+  return Math.random().toString(36).substr(2, 9);
+};
