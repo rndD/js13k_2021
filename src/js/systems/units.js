@@ -5,6 +5,7 @@ import {
   COLOR_LIGHT_BLUE,
   COLOR_ORANGE,
   COLOR_WHITE,
+  COLOR_YELLOW,
   GAME_HEIGHT,
   GAME_WIDTH,
   GENERATOR_TICK_TIME,
@@ -24,7 +25,7 @@ import { testAABBCollision } from "../utils/collisions";
 import { dist, id } from "../utils/utils";
 import { getGameData } from "./game";
 import { getBulletSpeed, getDmg, getRange, getReload } from "./helpers/game";
-import { boom } from "./particles";
+import { bam, boom } from "./particles";
 
 export function unitSystem(world) {
   const onUpdate = function (dt) {
@@ -97,7 +98,15 @@ export function towerSystem(world) {
             canShoot = true;
           }
           if (canShoot) {
-            shoot(world, entity.position, target, { dmg, type, w, h, speed });
+            shoot(
+              world,
+              {
+                x: entity.position.x + entity.body.w/2,
+                y: entity.position.y + entity.body.h/2,
+              },
+              target,
+              { dmg, type, w, h, speed }
+            );
             entity.unit.nextShot = now + reload;
             entity.unit.target = shootTarget;
           }
@@ -209,24 +218,11 @@ export function bulletMovementSystem(world) {
             y: entity.position.y,
           });
           if (entity.bullet.type == "rocket") {
-            boom(world, COLOR_LIGHT_BLUE, 0, {
-              dx: entity.moveable.dx,
-              dy: entity.moveable.dy * 2,
-              x: entity.position.x -5,
+            bam(world, COLOR_ORANGE, 1, {
+              x: entity.position.x - 5,
               y: entity.position.y,
             });
-            boom(world, COLOR_ORANGE, 0, {
-              dx: entity.moveable.dx * 10,
-              dy: entity.moveable.dy,
-              x: entity.position.x + 4,
-              y: entity.position.y,
-            });
-	    boom(world, COLOR_ORANGE, 0, {
-		dx: entity.moveable.dx *3,
-		dy: entity.moveable.dy,
-		x: entity.position.x + 1,
-		y: entity.position.y,
-	      });
+           
           }
 
           // small bump

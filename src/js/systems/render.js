@@ -4,9 +4,13 @@ import {
   COLOR_BLACK,
   COLOR_BROWN,
   COLOR_BROWN_LIGHT,
+  COLOR_DARK_BLUE,
   COLOR_DARK_BURGUNDY,
   COLOR_DARK_GREEN,
   COLOR_LIGHT_BLUE,
+  COLOR_LIGHT_VIOLA,
+  COLOR_ORANGE,
+  COLOR_PEACH,
   COLOR_PINK,
   COLOR_RED,
   COLOR_WHITE,
@@ -155,27 +159,28 @@ function drawBottomMenu(gameData, pointer) {
 function drawBgLines(now, bullets) {
   // ctx.strokeStyle = "rgba(255,255,255, 0.1)";
   let lg = LINES_GAP;
-  // for (let x = -linesGap*2; x < 1500; x += lg) {
-  //   ctx.beginPath();
+  for (let x = -lg * 2; x < 1500; x += lg) {
+    GAME_CTX.beginPath();
 
-  //   const offset = 0; //((now/100) % lg);
-  //   ctx.moveTo(x + offset, 0);
-  //   ctx.lineTo(x + offset, 1500);
+    GAME_CTX.strokeStyle = hexToRGB(COLOR_LIGHT_BLUE, 0.1);
+    GAME_CTX.moveTo(x + xGridStart, 0);
+    GAME_CTX.lineTo(x + xGridStart, 1500);
 
-  //   ctx.stroke();
-  // }
+    GAME_CTX.stroke();
+  }
 
-  // const offset = ((now % 1000) / 500) * lg;
-  const xOffset = 11;
+  const offset = 0; //((now % 1000) / 500) * lg;
+  const xOffset = xGridStart;
   const yOffset = 0;
-  // for (let y = -linesGap*2; y < 1500; y += lg) {
-  //   ctx.beginPath();
+  for (let y = -lg * 2; y < 1500; y += lg) {
+    GAME_CTX.beginPath();
+    GAME_CTX.strokeStyle = hexToRGB(COLOR_LIGHT_BLUE, 0.1);
 
-  //   ctx.moveTo(0, y + offset);
-  //   ctx.lineTo(1500, y + offset);
+    GAME_CTX.moveTo(0, y + offset);
+    GAME_CTX.lineTo(1500, y + offset);
 
-  //   ctx.stroke();
-  // }
+    GAME_CTX.stroke();
+  }
 
   // just cools effect
 
@@ -235,12 +240,42 @@ function drawBulletLines(from, to, b) {
   GAME_CTX.stroke();
 }
 
-function drawBox(position, w, h, color) {
+function drawBox(position, w, h, entity) {
   GAME_CTX.beginPath();
   // ctx.shadowColor = color;
   // ctx.shadowBlur = 5;
   GAME_CTX.rect(position.x, position.y, w, h);
-  GAME_CTX.fillStyle = color;
+  if (entity.bullet) {
+    if (entity.bullet.type === "rocket") {
+      GAME_CTX.fillStyle = COLOR_ORANGE;
+    }
+    if (entity.bullet.type === "gun") {
+      GAME_CTX.fillStyle = COLOR_LIGHT_BLUE;
+    }
+    if (entity.bullet.type === "sgun") {
+      GAME_CTX.fillStyle = COLOR_YELLOW;
+    }
+  }
+  if (entity.enemy) {
+    GAME_CTX.fillStyle = COLOR_RED;
+  }
+  if (entity.unit) {
+    if (entity.unit.type === "shield") {
+      GAME_CTX.fillStyle = COLOR_DARK_BLUE;
+    }
+    if (entity.unit.type === "gun") {
+      GAME_CTX.fillStyle = COLOR_LIGHT_BLUE;
+    }
+    if (entity.unit.type === "generator") {
+      GAME_CTX.fillStyle = COLOR_PEACH;
+    }
+    if (entity.unit.type === "rocket") {
+      GAME_CTX.fillStyle = COLOR_ORANGE;
+    }
+    if (entity.unit.type === "sgun") {
+      GAME_CTX.fillStyle = COLOR_YELLOW;
+    }
+  }
   GAME_CTX.fill();
 }
 
@@ -292,22 +327,6 @@ function drawBuildingGrid(gameData, pointer) {
       }
     }
   }
-
-  // for (let x = 0; x < 15; x++) {
-  //   for (let y = 0; y < 6; y++) {
-  //     if ([2, 3, 4, 5, 9, 10, 11, 12].includes(x)) {
-  //       if ([4, 5, 3].includes(y)) {
-  //         continue;
-  //       }
-  //     }
-
-  //     GAME_CTX.lineWidth = 2;
-  //     GAME_CTX.strokeStyle = COLOR_WHITE;
-  //     GAME_CTX.lineJoin = "bevel";
-  //     GAME_CTX.strokeRect(x * 32 + xOffset, y * 32 + yOffset, 29, 29);
-  //     // ctx.stroke();
-  //   }
-  // }
 }
 
 function renderPointer(pointer) {
@@ -341,22 +360,21 @@ function drawShields(shields) {
 
 function drawParticles(now, particles) {
   for (const entity of particles) {
-    entity.particle.size
-    const { size, color, lifeTime, circle} = entity.particle;
+    entity.particle.size;
+    const { size, color, lifeTime, circle } = entity.particle;
     const { x, y } = entity.position;
     const { creationTime } = entity.data;
-    const alpha = 0.3;//now - creationTime + lifeTime;
+    const alpha = 0.3; //now - creationTime + lifeTime;
 
     GAME_CTX.beginPath();
 
     GAME_CTX.fillStyle = hexToRGB(color, alpha);
     if (circle) {
-      entity.particle.size+=0.5;
-    GAME_CTX.strokeStyle = hexToRGB(color, alpha);
+      entity.particle.size += 0.5;
+      GAME_CTX.strokeStyle = hexToRGB(color, alpha);
       GAME_CTX.arc(x, y, entity.particle.size, 0, Math.PI * 2, true);
 
-      GAME_CTX.stroke(); 
-
+      GAME_CTX.stroke();
     } else {
       GAME_CTX.rect(x, y, size, size);
       GAME_CTX.fill();
@@ -389,12 +407,7 @@ export function rendererSystem(world) {
       ...ECS.getEntities(world, ["renderable", "unit"]),
       ...ECS.getEntities(world, ["renderable", "bullet"]),
     ]) {
-      drawBox(
-        entity.position,
-        entity.body.w,
-        entity.body.h,
-        entity.bullet ? getColor(entity.bullet) : COLOR_PINK
-      );
+      drawBox(entity.position, entity.body.w, entity.body.h, entity);
     }
 
     drawShields(ECS.getEntities(world, ["shield"]));
