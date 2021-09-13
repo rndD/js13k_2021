@@ -33,27 +33,27 @@ export const COLOR_PINK = "#FF77A8";
 export const COLOR_PEACH = "#FFCCAA";
 
 // game balance
-export const TOWER_RELOAD = 0.5 * 1000;
-export const TOWER_RANGE = 800;
+export const TOWER_RELOAD = 0.3 * 1000;
+export const TOWER_RANGE = 450;
 export const TOWER_BULLET_SPEED = 5;
 export const TOWER_DMG = 1;
 
 export const SCORE_TOWER_RELOAD = 0.1 * 1000;
-export const SCORE_TOWER_RANGE = 800;
+export const SCORE_TOWER_RANGE = 500;
 export const SCORE_TOWER_BULLET_SPEED = 10;
 export const SCORE_TOWER_DMG = 2;
 export const SCORE_TOWER_SCORE = 5;
 
-export const ROCKET_TOWER_RELOAD = 3 * 1000;
-export const ROCKET_TOWER_RANGE = 500;
+export const ROCKET_TOWER_RELOAD = 2 * 1000;
+export const ROCKET_TOWER_RANGE = 300;
 export const ROCKET_TOWER_BULLET_SPEED = 1;
-export const ROCKET_TOWER_DMG = 10;
+export const ROCKET_TOWER_DMG = 30;
 
-export const GENERATOR_TICK_TIME = 0.1 * 1000;
+export const GENERATOR_TICK_TIME = 0.5 * 1000;
 export const GENERATOR_TICK_VALUE = 1;
 export const MAX_ENERGY = 100;
 
-export const SHIELD_HP = 5;
+export const SHIELD_HP = 10;
 export const SHIELD_RANGE = 65;
 export const SHIELD_TICK = 2*1000;
 export const SHIELD_TICK_VALUE = 2;

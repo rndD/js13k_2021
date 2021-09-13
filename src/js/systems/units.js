@@ -2,6 +2,7 @@ import clamp from "clamp";
 import {
   BULLETS_WH,
   COLOR_BROWN_LIGHT,
+  COLOR_GRAY,
   COLOR_LIGHT_BLUE,
   COLOR_ORANGE,
   COLOR_WHITE,
@@ -31,17 +32,22 @@ export function unitSystem(world) {
   const onUpdate = function (dt) {
     const gameData = getGameData(world);
     const now = gameData.lifeTime;
+    if (gameData.paused) {
+      return;
+    }
 
     for (const entity of ECS.getEntities(world, ["platform"])) {
       if (entity.platform.hp <= 0) {
-        console.log("plat delete");
         delete gameData.platforms[entity.platform.xy];
         ECS.removeEntity(world, entity);
       }
     }
     for (const entity of ECS.getEntities(world, ["unit"])) {
       if (entity.unit.hp <= 0) {
-        console.log("unit delete");
+        bam(world, COLOR_GRAY, 1, {
+          x: entity.position.x + entity.body.w,
+          y: entity.position.y + entity.body.h,
+        });
         delete gameData.units[entity.unit.xy];
         ECS.removeEntity(world, entity);
       }
@@ -58,6 +64,9 @@ export function towerSystem(world) {
     const enemies = ECS.getEntities(world, ["enemy"]);
 
     if (enemies.length === 0) {
+      return;
+    }
+    if (gameData.paused) {
       return;
     }
 
@@ -101,8 +110,8 @@ export function towerSystem(world) {
             shoot(
               world,
               {
-                x: entity.position.x + entity.body.w/2,
-                y: entity.position.y + entity.body.h/2,
+                x: entity.position.x + entity.body.w / 2,
+                y: entity.position.y + entity.body.h / 2,
               },
               target,
               { dmg, type, w, h, speed }
@@ -124,6 +133,10 @@ export function generatorSystem(world) {
   const onUpdate = function (dt) {
     const gameData = getGameData(world);
     const now = gameData.lifeTime;
+
+    if (gameData.paused) {
+      return;
+    }
 
     for (const entity of ECS.getEntities(world, ["unit"])) {
       if (entity.unit.type === "generator") {
@@ -148,6 +161,10 @@ export function shieldSystem(world) {
     const gameData = getGameData(world);
     const now = gameData.lifeTime;
 
+    if (gameData.paused) {
+      return;
+    }
+
     for (const entity of ECS.getEntities(world, ["shield"])) {
       if (entity.shield.hp < entity.shield.fullHp) {
         if (!entity.shield.nextTick || now >= entity.shield.nextTick) {
@@ -156,6 +173,70 @@ export function shieldSystem(world) {
             gameData.energy -= SHIELD_TICK_VALUE;
             entity.shield.hp++;
           }
+        }
+      }
+    }
+  };
+
+  return { onUpdate };
+}
+
+export function bulletMovementSystem(world) {
+  const onUpdate = function (dt) {
+    const gameData = getGameData(world);
+    const now = gameData.lifeTime;
+
+    if (gameData.paused) {
+      return;
+    }
+
+    for (const entity of ECS.getEntities(world, ["bullet"])) {
+      // REMOVE THINGS OUT OF BOUNDS
+      if (
+        entity.position.x > GAME_WIDTH ||
+        entity.position.x < 0 ||
+        entity.position.y > GAME_HEIGHT ||
+        entity.position.y < 0
+      ) {
+        ECS.removeEntity(world, entity);
+        continue;
+      }
+
+      for (const enemy of ECS.getEntities(world, ["enemy"])) {
+        if (
+          testAABBCollision(
+            enemy.position,
+            enemy.body,
+            entity.position,
+            entity.body
+          ).collide
+        ) {
+          ECS.removeEntity(world, entity);
+          enemy.enemy.hp -= entity.bullet.dmg;
+          enemy.enemy.tookDmg = {
+            until: now + 100,
+            dx: entity.moveable.dx,
+            dy: entity.moveable.dy,
+          };
+
+          boom(world, COLOR_LIGHT_BLUE, 1, {
+            dx: entity.moveable.dx,
+            dy: entity.moveable.dy,
+            x: entity.position.x,
+            y: entity.position.y,
+          });
+          if (entity.bullet.type == "rocket") {
+            bam(world, COLOR_ORANGE, 1, {
+              x: entity.position.x - 5,
+              y: entity.position.y,
+            });
+          }
+
+          // small bump
+          enemy.position.x =
+            enemy.position.x + clamp(entity.moveable.dx * 0.1, -1, 1);
+          enemy.position.y =
+            enemy.position.y + clamp(entity.moveable.dy * 0.1, -1, 1);
         }
       }
     }
@@ -183,59 +264,6 @@ function shoot(world, from, to, { type, dmg, w, h, speed }) {
     from,
   });
   ECS.addComponentToEntity(world, bullet, "body", { w, h });
-}
-
-export function bulletMovementSystem(world) {
-  const onUpdate = function (dt) {
-    for (const entity of ECS.getEntities(world, ["bullet"])) {
-      // REMOVE THINGS OUT OF BOUNDS
-      if (
-        entity.position.x > GAME_WIDTH ||
-        entity.position.x < 0 ||
-        entity.position.y > GAME_HEIGHT ||
-        entity.position.y < 0
-      ) {
-        ECS.removeEntity(world, entity);
-        continue;
-      }
-
-      for (const enemy of ECS.getEntities(world, ["enemy"])) {
-        if (
-          testAABBCollision(
-            enemy.position,
-            enemy.body,
-            entity.position,
-            enemy.body
-          ).collide
-        ) {
-          ECS.removeEntity(world, entity);
-          enemy.enemy.hp -= entity.bullet.dmg;
-
-          boom(world, COLOR_LIGHT_BLUE, 1, {
-            dx: entity.moveable.dx,
-            dy: entity.moveable.dy,
-            x: entity.position.x,
-            y: entity.position.y,
-          });
-          if (entity.bullet.type == "rocket") {
-            bam(world, COLOR_ORANGE, 1, {
-              x: entity.position.x - 5,
-              y: entity.position.y,
-            });
-           
-          }
-
-          // small bump
-          enemy.position.x =
-            enemy.position.x + clamp(entity.moveable.dx * 0.1, -1, 1);
-          enemy.position.y =
-            enemy.position.y + clamp(entity.moveable.dy * 0.1, -1, 1);
-        }
-      }
-    }
-  };
-
-  return { onUpdate };
 }
 
 export function createPlatform(world, xGrid, yGrid, isInitial) {

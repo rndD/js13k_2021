@@ -1,31 +1,32 @@
 import ECS from "./lib/ecs";
 import { createGame, gameSystem } from "./systems/game";
-import { keyboardControlSystem } from "./systems/keyboard";
-import { movementSystem} from "./systems/movement";
+import { movementSystem } from "./systems/movement";
 import { rendererSystem } from "./systems/render";
 import { enemyMovementSystem, spawnSystem } from "./systems/enemy";
-import { bulletMovementSystem, generatorSystem, shieldSystem, towerSystem, unitSystem} from "./systems/units";
+import {
+  bulletMovementSystem,
+  generatorSystem,
+  shieldSystem,
+  towerSystem,
+  unitSystem,
+} from "./systems/units";
 import { inputSystem } from "./systems/input";
 import { particleSystem } from "./systems/particles";
 import { GAME_WIDTH, xGridStart } from "./constans";
-
 
 // generates a new entity component system
 const world = ECS.createWorld();
 
 // set spawn
 
-
-  let SPAWN = ECS.createEntity(world);
-  ECS.addComponentToEntity(world, SPAWN, "position", { x: xGridStart+ 32*4, y: 30 });
-  ECS.addComponentToEntity(world, SPAWN, "spawn", { nextTick: 100, level: 1 });
-  let SPAWN2 = ECS.createEntity(world);
-  ECS.addComponentToEntity(world, SPAWN2, "position", { x: GAME_WIDTH - (xGridStart + 32*4), y: 30 });
-  ECS.addComponentToEntity(world, SPAWN2, "spawn", { nextTick: 100, level: 1 });
-
+let SPAWN = ECS.createEntity(world);
+ECS.addComponentToEntity(world, SPAWN, "position", {
+  x: GAME_WIDTH /2,
+  y: -10,
+});
+ECS.addComponentToEntity(world, SPAWN, "spawn", {});
 
 createGame(world);
-
 
 ECS.addSystem(world, gameSystem);
 
@@ -44,7 +45,6 @@ ECS.addSystem(world, enemyMovementSystem);
 
 ECS.addSystem(world, particleSystem);
 ECS.addSystem(world, rendererSystem);
-
 
 let currentTime = performance.now();
 

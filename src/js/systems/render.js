@@ -8,6 +8,7 @@ import {
   COLOR_DARK_BURGUNDY,
   COLOR_DARK_GREEN,
   COLOR_LIGHT_BLUE,
+  COLOR_LIGHT_GREEN,
   COLOR_LIGHT_VIOLA,
   COLOR_ORANGE,
   COLOR_PEACH,
@@ -15,6 +16,7 @@ import {
   COLOR_RED,
   COLOR_WHITE,
   COLOR_YELLOW,
+  GAME_HEIGHT,
   LINES_GAP,
   ORIGINAL_HEIGHT,
   ORIGINAL_WIDTH,
@@ -36,7 +38,6 @@ import { getRange } from "./helpers/game";
 let MAIN_CANVAS = document.querySelector("canvas");
 let canvasHeight = (MAIN_CANVAS.height = window.innerHeight);
 let canvasWidth = (MAIN_CANVAS.width = (canvasHeight / 16) * 9);
-console.log(canvasWidth, canvasHeight);
 let MAIN_CANVAS_CTX = MAIN_CANVAS.getContext("2d");
 
 const GAME_CANVAS = MAIN_CANVAS.cloneNode(); // visible portion of map/viewport
@@ -148,6 +149,7 @@ function drawBottomMenu(gameData, pointer) {
     drawButton(BOTTOM_MENU_CTX, b.x, b.y, b.w, b.h, {
       isSelectable,
       isSelected,
+      color: b.color,
       topText: b.topText,
       bottomText: b.bottomText,
       bottomTextColor: b.bottomTextColor,
@@ -167,6 +169,7 @@ function drawBgLines(now, bullets) {
     GAME_CTX.lineTo(x + xGridStart, 1500);
 
     GAME_CTX.stroke();
+    GAME_CTX.closePath()
   }
 
   const offset = 0; //((now % 1000) / 500) * lg;
@@ -180,26 +183,27 @@ function drawBgLines(now, bullets) {
     GAME_CTX.lineTo(1500, y + offset);
 
     GAME_CTX.stroke();
+    GAME_CTX.closePath()
   }
 
   // just cools effect
 
   for (const b of bullets) {
+    GAME_CTX.beginPath();
     const color = getColor(b.bullet);
 
     yline = LINES_GAP * Math.floor(b.position.y / LINES_GAP) + yOffset;
 
-    xmin = b.position.x - 32;
-    xmax = b.position.x + 32;
+    xmin = b.position.x - 16;
+    xmax = b.position.x + 16;
 
     var grad = GAME_CTX.createLinearGradient(xmin, yline, xmax, yline);
     var light = 1 - (b.position.y - (yline + yOffset)) / LINES_GAP;
-    grad.addColorStop(0, hexToRGB(color, 0));
+    grad.addColorStop(0, hexToRGB(color, 0.1));
     grad.addColorStop(0.5, hexToRGB(color, light));
-    grad.addColorStop(1, hexToRGB(color, 0));
+    grad.addColorStop(1, hexToRGB(color, 0.1));
     GAME_CTX.strokeStyle = grad;
 
-    GAME_CTX.beginPath();
     GAME_CTX.moveTo(xmin, yline);
     GAME_CTX.lineTo(xmax, yline);
     // ctx.strokeStyle = 'rgba(0,0,0, 0.8)';
@@ -256,9 +260,7 @@ function drawBox(position, w, h, entity) {
       GAME_CTX.fillStyle = COLOR_YELLOW;
     }
   }
-  if (entity.enemy) {
-    GAME_CTX.fillStyle = COLOR_RED;
-  }
+
   if (entity.unit) {
     if (entity.unit.type === "shield") {
       GAME_CTX.fillStyle = COLOR_DARK_BLUE;
@@ -277,6 +279,42 @@ function drawBox(position, w, h, entity) {
     }
   }
   GAME_CTX.fill();
+  GAME_CTX.closePath();
+}
+
+function drawEnemy(now, position, w, h, entity) {
+  GAME_CTX.beginPath();
+
+  const { x, y } = position;
+
+  GAME_CTX.rect(x, y, w, h);
+
+  // //position.x, position.y, w, h
+  // GAME_CTX.shadowBlur = 2;
+  // GAME_CTX.shadowColor = COLOR_RED;
+  GAME_CTX.lineWidth = 1;
+  GAME_CTX.strokeStyle = COLOR_RED;
+  GAME_CTX.stroke();
+  GAME_CTX.closePath();
+
+  if (entity.enemy.tookDmg?.until > now) {
+    const { dx, dy } = entity.enemy.tookDmg;
+    GAME_CTX.beginPath();
+    var grad = GAME_CTX.createLinearGradient(x*dx*-1-h,y*dy*-1-w, x*dx,y*dy);
+    grad.addColorStop(1, hexToRGB(COLOR_WHITE, 0.0));
+    grad.addColorStop(0, hexToRGB(COLOR_WHITE, 1));
+
+    GAME_CTX.rect(x, y, w, h);
+
+    //position.x, position.y, w, h
+    GAME_CTX.lineWidth = 1;
+    GAME_CTX.strokeStyle = grad;
+    GAME_CTX.stroke();
+    GAME_CTX.closePath();
+  }
+  // GAME_CTX.fillStyle = COLOR_RED;
+
+  // GAME_CTX.fill();
 }
 
 function drawPlatforms(world) {
@@ -301,8 +339,8 @@ function drawBuildingGrid(gameData, pointer) {
     )) {
       GAME_CTX.beginPath();
       GAME_CTX.lineWidth = 2;
-      GAME_CTX.shadowColor = COLOR_DARK_GREEN;
-      GAME_CTX.shadowBlur = 1;
+      // GAME_CTX.shadowColor = COLOR_DARK_GREEN;
+      // GAME_CTX.shadowBlur = 1;
       let showCircle = false;
       if (isPointerIn(pointer, { x, y, w, h })) {
         GAME_CTX.strokeStyle = COLOR_YELLOW;
@@ -346,12 +384,24 @@ function renderPointer(pointer) {
   ctx.stroke();
 }
 
-function drawShields(shields) {
+function drawShields(now, shields) {
   for (const entity of shields) {
-    const { x, y, range, hp } = entity.shield;
+    const { x, y, range, hp, fullHp } = entity.shield;
     if (hp > 0) {
+      const xAnimationOffset = Math.round((Math.round(now) % 1000) / 1000);
+
+      var grad = GAME_CTX.createLinearGradient(
+        x - xAnimationOffset,
+        y - range,
+        x + range,
+        y + range
+      );
+      const alpha = hp / fullHp;
+      grad.addColorStop(0, hexToRGB(COLOR_LIGHT_BLUE, alpha));
+      grad.addColorStop(1, hexToRGB(COLOR_LIGHT_BLUE, 0.5));
+
       GAME_CTX.beginPath();
-      GAME_CTX.strokeStyle = COLOR_LIGHT_BLUE;
+      GAME_CTX.strokeStyle = grad;
       GAME_CTX.arc(x, y, range, 0, Math.PI * 2, true);
       GAME_CTX.stroke();
     }
@@ -368,12 +418,15 @@ function drawParticles(now, particles) {
 
     GAME_CTX.beginPath();
 
-    GAME_CTX.fillStyle = hexToRGB(color, alpha);
+    const c = hexToRGB(color, alpha);
+    GAME_CTX.fillStyle = c;
     if (circle) {
       entity.particle.size += 0.5;
-      GAME_CTX.strokeStyle = hexToRGB(color, alpha);
+      GAME_CTX.strokeStyle = c;
       GAME_CTX.arc(x, y, entity.particle.size, 0, Math.PI * 2, true);
 
+      // GAME_CTX.shadowColor = c;
+      // GAME_CTX.shadowBlur = 2;
       GAME_CTX.stroke();
     } else {
       GAME_CTX.rect(x, y, size, size);
@@ -382,10 +435,24 @@ function drawParticles(now, particles) {
   }
 }
 
+function drawAlert(gameData) {
+  if (gameData.won) {
+  renderText(GAME_CTX, "You won!", 20, GAME_HEIGHT/2, 15, COLOR_YELLOW);
+  renderText(GAME_CTX, "Score: " + gameData.score, 120, GAME_HEIGHT/2+100, 8, COLOR_YELLOW);
+  }
+
+  if (gameData.gameOver) {
+    renderText(GAME_CTX, "Game Over!", 20, GAME_HEIGHT/2, 12, COLOR_RED);
+    renderText(GAME_CTX, "Score: " + gameData.score, 120, GAME_HEIGHT/2+100, 8, COLOR_RED);
+    }
+
+}
+
+
 export function rendererSystem(world) {
   const onUpdate = function (dt) {
     const gameData = getGameData(world);
-    const now = gameData.lifetime;
+    const now = gameData.lifeTime;
     const { pointer } = ECS.getEntities(world, ["input"])[0].input;
 
     GAME_CTX.fillStyle = COLOR_BLACK;
@@ -403,14 +470,17 @@ export function rendererSystem(world) {
     }
 
     for (const entity of [
-      ...ECS.getEntities(world, ["renderable", "enemy"]),
       ...ECS.getEntities(world, ["renderable", "unit"]),
       ...ECS.getEntities(world, ["renderable", "bullet"]),
     ]) {
       drawBox(entity.position, entity.body.w, entity.body.h, entity);
     }
 
-    drawShields(ECS.getEntities(world, ["shield"]));
+    for (const entity of [...ECS.getEntities(world, ["renderable", "enemy"])]) {
+      drawEnemy(now, entity.position, entity.body.w, entity.body.h, entity);
+    }
+
+    drawShields(now, ECS.getEntities(world, ["shield"]));
 
     drawTopMenu(gameData);
     drawBottomMenu(gameData, pointer);
@@ -421,6 +491,8 @@ export function rendererSystem(world) {
 
     // DEBUG POINTER
     renderPointer(pointer);
+    
+    drawAlert(gameData);
 
     // compose
 

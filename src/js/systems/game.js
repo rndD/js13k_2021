@@ -8,12 +8,16 @@ import { buy, setBuildingMode, clearMode, calcBuildingAvaliblePoints, emp } from
 export function createGame(world) {
   const GAME = ECS.createEntity(world);
   ECS.addComponentToEntity(world, GAME, "gameData", {
-    wave: 1,
+    wave: 0,
     lifeTime: 0,
-    score: 1005,
-    hp: 1000,
+    score: 50,
+    hp: 150,
     energy: 40,
     mode: null,
+    nextWaveTime: 0,
+    gameOver: false,
+    won:false,
+    paused:false,
     platforms: getInitialPlatforms(world),
     units: getInitialUnits(world)
   });
@@ -30,6 +34,21 @@ export function gameSystem(world) {
     // lifetime
     game.gameData.lifeTime += dt;
     const { gameData } = game;
+
+    if (gameData.wave === 666) {
+	gameData.won = true;
+	gameData.paused = true;
+    }
+
+    if (gameData.hp < 1) {
+	gameData.gameOver = true;
+	gameData.paused = true;
+    }
+
+    if (gameData.paused) {
+	    return;
+    }
+
 
     // input click
     if (game.input.clicked) {

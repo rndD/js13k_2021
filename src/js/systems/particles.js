@@ -143,7 +143,6 @@ export function particleSystem(world) {
     const now = gameData.lifeTime;
     for (const entity of ECS.getEntities(world, ["particle"])) {
       if (now > entity.data.creationTime + entity.particle.lifeTime) {
-        console.log("removed");
         ECS.removeEntity(world, entity);
       }
     }

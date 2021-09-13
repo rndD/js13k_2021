@@ -7,7 +7,7 @@ export function drawButton(
   y,
   w,
   h,
-  { isSelectable, isSelected, topText, bottomText, bottomTextColor }
+  { isSelectable, isSelected, topText, bottomText, bottomTextColor, color}
 ) {
   ctx.beginPath();
   ctx.lineWidth = 2;
@@ -21,12 +21,13 @@ export function drawButton(
     // ctx.fillStyle();
   } else {
     ctx.strokeStyle = COLOR_RED;
-    ctx.fillStyle = COLOR_RED;
-    ctx.fill();
+    ;
   }
 
   ctx.lineJoin = "round";
   ctx.rect(x, y, w, h);
+  ctx.fillStyle = color;
+  ctx.fill()
   ctx.stroke();
 
   if (topText) {

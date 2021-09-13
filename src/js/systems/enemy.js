@@ -6,28 +6,48 @@ import {
   COLOR_RED,
   COLOR_WHITE,
   GAME_HEIGHT,
+  GAME_WIDTH,
 } from "../constans";
 import ECS from "../lib/ecs";
 import { correctAABBCollision, testAABBCollision } from "../utils/collisions";
-import { dist } from "../utils/utils";
+import { dist, randInt, shuffleArray } from "../utils/utils";
 import { getGameData } from "./game";
-import { createEnemy, isNextTick } from "./helpers/enemy";
+import { createEnemy, isNextTick, WAVES } from "./helpers/enemy";
 import { bam, boom } from "./particles";
 
 export function spawnSystem(world) {
   const onUpdate = function (dt) {
-    const now = getGameData(world).lifeTime;
+    const gameData = getGameData(world);
+    const now = gameData.lifeTime;
+
+    if (gameData.paused) {
+	    return;
+    }
 
     for (const entity of ECS.getEntities(world, ["spawn"])) {
-      if (isNextTick(entity, now)) {
-        createEnemy(world, entity.position, entity.spawn.level, "linear");
-        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
-        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
-        createEnemy(world, entity.position, entity.spawn.level, "linear");
-        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
-        createEnemy(world, entity.position, entity.spawn.level, "linear");
-        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
-        createEnemy(world, entity.position, entity.spawn.level, "zigzag");
+      if (isNextTick(gameData)) {
+        if (WAVES[gameData.wave]) {
+
+        shuffleArray( WAVES[gameData.wave].enemies);
+        for (const e of WAVES[gameData.wave].enemies) {
+          let {x,y} = entity.position;
+          if (gameData.wave == 1) {
+            y=0;
+          }
+
+          x = x + randInt(-GAME_WIDTH/3, GAME_WIDTH/3);
+          y = y - randInt(-100, 100);
+
+          
+          createEnemy(world, {x,y}, entity.spawn.level, e);
+
+        }  
+
+        // createEnemy(world, entity.position, entity.spawn.level, "medium");
+        // createEnemy(world, entity.position, entity.spawn.level, "boss");
+        // createEnemy(world, entity.position, entity.spawn.level, "boss2");
+        // createEnemy(world, entity.position, entity.spawn.level, "huge");
+        }
       }
     }
   };
@@ -41,6 +61,10 @@ export function enemyMovementSystem(world) {
   const onUpdate = function (dt) {
     const gameData = getGameData(world);
     const { lifeTime } = gameData;
+
+    if (gameData.paused) {
+	    return;
+    }
 
     const shields = ECS.getEntities(world, ["shield"]).filter((e) => {
       return e.shield.hp > 0;
@@ -145,13 +169,13 @@ export function enemyMovementSystem(world) {
     );
 
     for (const entity of entities) {
-      let levelSpeed = 20 * entity.enemy.level;
+      const speed = entity.enemy.speed * 20;
       if (entity.enemy.movementType === "linear") {
-        entity.moveable.dy = (dt / 1000) * levelSpeed;
+        entity.moveable.dy = (dt / 1000) * speed;
       }
 
       if (entity.enemy.movementType === "zigzag") {
-        entity.moveable.dy = (dt / 1000) * levelSpeed;
+        entity.moveable.dy = (dt / 1000) * speed;
         entity.moveable.dx =
           Math.cos((lifeTime - entity.data.creationTime) / 1000) * AMPLITUDE;
       }
